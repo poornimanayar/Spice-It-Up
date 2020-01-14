@@ -1,0 +1,13 @@
+
+.vs/Umbraco.Heartcore.Demo/DesignTimeBuild/.dtbcache
+
+.vs/Umbraco.Heartcore.Demo/v16/
+/packages/
+Umbraco.Heartcore.Alexa/bin/
+*.user
+
+Umbraco.Heartcore.Alexa/Properties/PublishProfiles/
+
+Umbraco.Heartcore.Alexa/obj/
+
+*.PublishSettings
