@@ -11,3 +11,9 @@ Umbraco.Heartcore.Alexa/Properties/PublishProfiles/
 Umbraco.Heartcore.Alexa/obj/
 
 *.PublishSettings
+Umbraco.Hearcore.NetCore/bin/
+*.user
+
+Umbraco.Hearcore.NetCore/Properties/PublishProfiles/
+
+Umbraco.Hearcore.NetCore/obj/
