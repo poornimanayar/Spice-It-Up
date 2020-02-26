@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29411.108
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Umbraco.Heartcore.Alexa", "Umbraco.Heartcore.Alexa\Umbraco.Heartcore.Alexa.csproj", "{E01C94D0-E25D-43AB-B89E-C41A170311A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Umbraco.Hearcore.NetCore", "Umbraco.Hearcore.NetCore\Umbraco.Hearcore.NetCore.csproj", "{5CD4AD62-D1A1-4BF3-8C0F-AE35220CAE3C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Umbraco.Heartcore.NetCore", "Umbraco.Hearcore.NetCore\Umbraco.Heartcore.NetCore.csproj", "{5CD4AD62-D1A1-4BF3-8C0F-AE35220CAE3C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

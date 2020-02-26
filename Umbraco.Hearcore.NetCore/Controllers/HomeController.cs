@@ -1,26 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Umbraco.Headless.Client.Net.Delivery;
 using Umbraco.Headless.Client.Net.Management;
-using Umbraco.Headless.Client.Net.Management.Models;
-using Umbraco.Hearcore.NetCore.Models;
+using Umbraco.Heartcore.NetCore.Models;
 
-namespace Umbraco.Hearcore.NetCore.Controllers
+namespace Umbraco.Heartcore.NetCore.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-        private IConfiguration _configuration;
+       private IConfiguration _configuration;
         public HomeController(ILogger<HomeController> logger, IConfiguration configuration)
         {
-            _logger = logger;
-            this._configuration = configuration;
+           this._configuration = configuration;
         }
 
         public async Task<IActionResult> Index()
@@ -29,7 +24,7 @@ namespace Umbraco.Hearcore.NetCore.Controllers
             var projectAlias = umbracoConfig.GetValue<string>("ProjectAlias");
             var contentDeliveryService = new ContentDeliveryService(projectAlias);
             var spiceFacts = await contentDeliveryService.Content.GetByType("spiceFact", null, page: 1, pageSize: 25);
-            return View(spiceFacts);
+            return this.View(spiceFacts);
         }
 
         [HttpPost]
@@ -48,17 +43,17 @@ namespace Umbraco.Hearcore.NetCore.Controllers
             var updatedItem = await contentManagementService.Content.GetById(updateItem.Id);
             var publishedItem = await contentManagementService.Content.Publish(updatedItem.Id);
             
-            return Json(new { message = "This is a JSON result.", date = DateTime.Now, spiceFactor = spicyCounterUpdated });
+            return this.Json(new { message = "This is a JSON result.", date = DateTime.Now, spiceFactor = spicyCounterUpdated });
         }
         public IActionResult Privacy()
         {
-            return View();
+            return this.View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return this.View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? this.HttpContext.TraceIdentifier });
         }
     }
 }
