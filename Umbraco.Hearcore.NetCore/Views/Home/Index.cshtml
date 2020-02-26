@@ -8,13 +8,22 @@
 </div>
 @foreach (var item in Model.Content.Items)
 {
-  <div class="spice-fact">
-    <h2>@item.Name</h2>
-    <p>
-      @item.Properties["fact"].ToString()
-    </p>
-    <p class="spice-factor">Spice Factor : </p>
-    <span>@(item.Properties["spicyCounter"] != string.Empty ? item.Properties["spicyCounter"].ToString() : "0")</span>
-    <button class="spicy-button" data-id="@item.Id">That's spicy!</button>
-  </div>
+<div class="spice-fact">
+  @*Display the name of the node*@
+  <h2>@item.Name</h2>
+
+  @*Get the property value of the fact property which holds the spice fact*@
+  <p>
+    @item.Properties["fact"].ToString()
+  </p>
+
+  @*Display the likes on the spice fact*@
+  <p class="spice-factor">Spice Factor : </p>
+
+  @*Get the property value of the spicyCounter property which holds the likes for the spice fact*@
+  <span>@(item.Properties["spicyCounter"].ToString() != string.Empty ? item.Properties["spicyCounter"].ToString() : "0")</span>
+
+  @*A button to like the spice fact, note that I am storing the unique id of the item as a data attribute*@
+  <button class="spicy-button" data-id="@item.Id">That's spicy!</button>
+</div>
 }
