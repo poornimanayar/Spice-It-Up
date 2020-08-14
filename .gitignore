@@ -17,3 +17,5 @@ Umbraco.Hearcore.NetCore/bin/
 Umbraco.Hearcore.NetCore/Properties/PublishProfiles/
 
 Umbraco.Hearcore.NetCore/obj/
+
+.vs/

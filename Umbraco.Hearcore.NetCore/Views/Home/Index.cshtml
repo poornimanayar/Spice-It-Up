@@ -6,7 +6,7 @@
 <div class="text-center">
   <h1 class="display-4">Welcome to Spice It Up!</h1>
 </div>
-@foreach (var item in Model.Content.Items)
+@foreach (var item in Model.Content.Items))
 {
 <div class="spice-fact">
   @*Display the name of the node*@
@@ -24,6 +24,6 @@
   <span>@(item.Properties["spicyCounter"].ToString() != string.Empty ? item.Properties["spicyCounter"].ToString() : "0")</span>
 
   @*A button to like the spice fact, note that I am storing the unique id of the item as a data attribute*@
-  <button class="spicy-button" data-id="@item.Id">That's spicy!</button>
+  <button class="spicy-button" data-id="@item.Id"><i class="fas fa-pepper-hot"></i> That's spicy!</button>
 </div>
 }

@@ -55,15 +55,14 @@ namespace Umbraco.Heartcore.NetCore.Controllers
             //get an instance of the Content Management API
             var contentManagementService = new ContentManagementService(projectAlias, apiKey);
 
-            //get the 
+            //get the content item which I am liking
             var contentItem = await contentManagementService.Content.GetById(Guid.Parse(id));
 
             int spicyCounter = contentItem.Properties["spicyCounter"]["$invariant"] == string.Empty ? 0 : Convert.ToInt32(contentItem.Properties["spicyCounter"]["$invariant"]);
             int spicyCounterUpdated = spicyCounter + 1;
             contentItem.SetValue("spicyCounter", spicyCounterUpdated);
             var updateItem = await contentManagementService.Content.Update(contentItem);
-            var updatedItem = await contentManagementService.Content.GetById(updateItem.Id);
-            var publishedItem = await contentManagementService.Content.Publish(updatedItem.Id);
+            var publishedItem = await contentManagementService.Content.Publish(Guid.Parse(id));
             
             return this.Json(new { message = "This is a JSON result.", date = DateTime.Now, spiceFactor = spicyCounterUpdated });
         }

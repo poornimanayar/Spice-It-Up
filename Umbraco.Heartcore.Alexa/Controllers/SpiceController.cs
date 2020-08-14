@@ -23,24 +23,10 @@ namespace Umbraco.Heartcore.Alexa.Controllers
             this._configuration = configuration;
         }
 
-        [HttpGet]
-        [Route("getspicefacts")]
-        public async Task<SkillResponse> GetSpiceFactsAsync()
-        {
-            SkillResponse skillResponse = new SkillResponse
-            {
-                Response = await this.SpiceIntentHandlerAsync(),
-                Version = AlexaConstants.AlexaVersion,
-                SessionAttributes = new Dictionary<string, object>() { { "locale", "en_GB" } }
-            };
-
-            
-            return skillResponse;
-        }
 
         [HttpPost]
         [Route("spicefacts")]
-        public async Task<SkillResponse> GetSpiceFactsAsync([FromBody]SkillRequest request)
+        public async Task<SkillResponse> GetSpiceFactsAsync([FromBody] SkillRequest request)
         {
             SkillResponse skillResponse = new SkillResponse
             {
@@ -52,9 +38,11 @@ namespace Umbraco.Heartcore.Alexa.Controllers
             switch (request.Request.Type)
             {
                 case "LaunchRequest":
+                    //handler for launchrequest intent type
                     skillResponse.Response = await this.LaunchRequestHandlerAsync();
                     break;
                 case "IntentRequest":
+                    //handler for intentrequest intent type
                     skillResponse.Response = await this.IntentRequestHandlerAsync(request);
                     break;
             }
@@ -66,7 +54,6 @@ namespace Umbraco.Heartcore.Alexa.Controllers
         {
             // get content delivery service
             var service = this.GetContentDeliveryService();
-
             // get the spice facts container
             var items = await service.Content.GetByType("SpiceFactsContainer");
             var spiceContainer = items.Content.Items.FirstOrDefault();
@@ -75,23 +62,25 @@ namespace Umbraco.Heartcore.Alexa.Controllers
             var media = this.GetMedia(spiceContainer.Properties["defaultImage"] as JObject);
             var response = new Response
             {
-               
-                OutputSpeech = new OutputSpeech()
+                OutputSpeech = new OutputSpeech() // what end user hears
                 {
-                    Ssml = this.SsmlDecorate(spiceContainer.Properties["welcomeMessage"].ToString()),
-                    Text = spiceContainer.Properties["welcomeMessage"].ToString(), // get the welcome message text from spice facts container node
+
+                    // get the welcome message text from spice facts container node.
+                    //adding some SSML (Speech Synthesis Markup Language) goodness with a speechcon(words pronounced more expressively)
+                    //best practice to have a pause using a punctuation
+                    Ssml = @$"<speak> <say-as interpret-as=""interjection"">Ola!</say-as><break time=""1s""/>{spiceContainer.Properties["welcomeMessage"]}</speak>",
                     Type = "SSML"
                 },
-                Reprompt = new Reprompt() 
+                Reprompt = new Reprompt()
                 {
                     OutputSpeech = new OutputSpeech()
                     {
                         Text = spiceContainer.Properties["welcomeRepromptMessage"].ToString(),
                         Type = "SSML",
-                        Ssml = this.SsmlDecorate(spiceContainer.Properties["welcomeRepromptMessage"].ToString()),
+                        Ssml = $@"<speak>{spiceContainer.Properties["welcomeRepromptMessage"]}</speak>",
                     }
                 },
-                Card = new Card()
+                Card = new Card() // what end user sees on Alexa devices with screen
                 {
                     Title = spiceContainer.Properties["alexaSkillName"].ToString(), // get the value of alexaSkillName property from the node
                     Text = spiceContainer.Properties["welcomeMessage"].ToString(),
@@ -121,7 +110,7 @@ namespace Umbraco.Heartcore.Alexa.Controllers
                 case "AMAZON.StopIntent":
                     response = await this.CancelOrStopIntentHandler();
                     break;
-                case "AMAZON.HelpIntent":
+                case "AMAZON.HelpIntent": //handling built-in intents
                     response = await this.HelpIntentHandler();
                     break;
                 default:
@@ -129,6 +118,80 @@ namespace Umbraco.Heartcore.Alexa.Controllers
                     break;
             }
 
+            return response;
+        }
+
+        private async Task<Response> SpiceIntentHandlerAsync()
+        {
+            // get content delivery service
+            var service = this.GetContentDeliveryService();
+
+            // get the spice facts container
+            var items = await service.Content.GetByType("SpiceFactsContainer");
+            var spiceContainer = items.Content.Items.FirstOrDefault();
+
+            // get the default media value from spice facts container node
+            var media = this.GetMedia(spiceContainer.Properties["defaultImage"] as JObject);
+
+            // get all spice facts and choose a random node
+            var spiceFactItems = await service.Content.GetByType("SpiceFact");
+            var next = random.Next(spiceFactItems.Content.Items.Count());
+            var item = spiceFactItems.Content.Items.ElementAt(next);
+
+            var response = new Response
+            {
+                OutputSpeech = new OutputSpeech() // what end user hears
+                {
+                    //adding some SSML (Speech Synthesis Markup Language) goodness with an emotion and a break
+                    Ssml = $@"<speak> <say-as interpret-as=""interjection"">ooh la la, here is a fact about spices! </say-as><break time=""1s""/><amazon:emotion name=""excited"" intensity=""high"">{item.Properties["fact"]}</amazon:emotion></speak>",// get the value of the "fact" property from the node and serve it up as SSML
+                    Type = "SSML"
+                },
+
+                Card = new Card() // what end user hears
+                {
+                    Title = spiceContainer.Properties["alexaSkillName"].ToString(), //Skill name from the Spice Facts Container node
+                    Text = item.Properties["fact"].ToString(), //the fact from the selected spice fact node
+                    Type = "Standard",
+                    Image = new CardImage()
+                    {
+                        LargeImageUrl = media.Url,
+                        SmallImageUrl = media.Url
+                    }
+
+                },
+                ShouldEndSession = false
+            };
+            return response;
+        }
+
+        private async Task<Response> CancelOrStopIntentHandler()
+        {
+            var service = this.GetContentDeliveryService();
+            var items = await service.Content.GetByType("SpiceFactsContainer");
+            var spiceContainer = items.Content.Items.FirstOrDefault();
+            var media = this.GetMedia(spiceContainer.Properties["defaultImage"] as JObject);
+            var response = new Response
+            {
+                OutputSpeech = new OutputSpeech()
+                {
+                    //adding some SSML (Speech Synthesis Markup Language) goodness with an applause at the end
+                    Ssml = @$"<speak><amazon:emotion name=""disappointed"" intensity=""medium"">{spiceContainer.Properties["stopMessage"]} <audio src=""soundbank://soundlibrary/human/amzn_sfx_crowd_applause_01""/></amazon:emotion></speak>",
+                    Type = "SSML"
+                },
+                Card = new Card()
+                {
+                    Title = spiceContainer.Properties["alexaSkillName"].ToString(),
+                    Text = spiceContainer.Properties["stopMessage"].ToString(),
+                    Type = "Standard",
+                    Image = new CardImage()
+                    {
+                        LargeImageUrl = media.Url,
+                        SmallImageUrl = media.Url
+                    }
+
+                },
+                ShouldEndSession = true
+            };
             return response;
         }
 
@@ -167,79 +230,6 @@ namespace Umbraco.Heartcore.Alexa.Controllers
                 },
 
                 ShouldEndSession = false
-            };
-            return response;
-        }
-
-        private async Task<Response> SpiceIntentHandlerAsync()
-        {
-            // get content delivery service
-            var service = this.GetContentDeliveryService();
-
-            // get the spice facts container
-            var items = await service.Content.GetByType("SpiceFactsContainer");
-            var spiceContainer = items.Content.Items.FirstOrDefault();
-
-            // get the default media value from spice facts container node
-            var media = this.GetMedia(spiceContainer.Properties["defaultImage"] as JObject);
-
-            // get all spice facts and choose a random node
-            var spiceFactItems = await service.Content.GetByType("SpiceFact");
-            var next = random.Next(spiceFactItems.Content.Items.Count());
-            var item = spiceFactItems.Content.Items.ElementAt(next);
-
-            var response = new Response
-            {
-                OutputSpeech = new OutputSpeech()
-                {
-                    Ssml = this.SsmlDecorate(item.Properties["fact"].ToString()), // get the value of the "fact" property from the node and serve it up as SSML
-                    Text = item.Properties["fact"].ToString(),
-                    Type = "SSML"
-                },
-
-                Card = new Card()
-                {
-                    Title = spiceContainer.Properties["alexaSkillName"].ToString(),
-                    Text = item.Properties["fact"].ToString(),
-                    Type = "Standard",
-                    Image = new CardImage()
-                    {
-                        LargeImageUrl = media.Url,
-                        SmallImageUrl = media.Url
-                    }
-
-                },
-                ShouldEndSession = false
-            };
-            return response;
-        }
-
-        private async Task<Response> CancelOrStopIntentHandler()
-        {
-            var service = this.GetContentDeliveryService();
-            var items = await service.Content.GetByType("SpiceFactsContainer");
-            var spiceContainer = items.Content.Items.FirstOrDefault();
-            var media = this.GetMedia(spiceContainer.Properties["defaultImage"] as JObject);
-            var response = new Response
-            {
-                OutputSpeech = new OutputSpeech()
-                {
-                    Ssml = this.SsmlDecorate(spiceContainer.Properties["stopMessage"].ToString()),
-                    Type = "SSML"
-                },
-                Card = new Card()
-                {
-                    Title = spiceContainer.Properties["alexaSkillName"].ToString(),
-                    Text = spiceContainer.Properties["stopMessage"].ToString(),
-                    Type = "Standard",
-                    Image = new CardImage()
-                    {
-                        LargeImageUrl = media.Url,
-                        SmallImageUrl = media.Url
-                    }
-
-                },
-                ShouldEndSession = true
             };
             return response;
         }
